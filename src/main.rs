@@ -13,6 +13,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[command(version = VERSION)]
 #[command(about = "CLI for converting cursor SVG files to PNG files.", long_about = None)]
 struct Cli {
+    /// Path to JSON configuration file
     #[arg(value_name = "CONFIG")]
     config: PathBuf,
 }
