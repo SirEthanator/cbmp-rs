@@ -4,6 +4,32 @@ A CLI for converting cursor SVG files to PNG files.
 
 This is a partial port of [cbmp](https://github.com/ful1e5/cbmp) by [ful1e5](https://github.com/ful1e5). It currently only supports usage through JSON configuration files and does not support animated SVG files. Other features are not planned currently.
 
+## Installation
+
+### AUR
+
+Arch Linux users can install cbmp-rs via the `cbmp-rs` AUR package.
+
+```sh
+git clone 'https://aur.archlinux.org/cbmp-rs.git'
+cd cbmp-rs
+makepkg -si
+```
+
+Or feel free to use an AUR helper, such as yay or paru.
+
+### Manual
+
+Manual installation is pretty straightforward.
+
+```sh
+git clone 'https://github.com/SirEthanator/cbmp-rs.git'
+cd cbmp-rs
+cargo install --path .
+```
+
+Ensure that `$HOME/.cargo/bin` is in your PATH for Linux and macOS. For windows, make sure `%USERPROFILE%\.cargo\bin` is in your Path.
+
 ## Usage
 
 ```
