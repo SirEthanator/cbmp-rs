@@ -1,12 +1,12 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use resvg::tiny_skia;
+use resvg::tiny_skia::Pixmap;
+use resvg::usvg;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{Write, stdout};
 use std::path::{Path, PathBuf};
-use resvg::tiny_skia;
-use resvg::tiny_skia::Pixmap;
-use resvg::usvg;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -36,6 +36,8 @@ struct Task {
     out: PathBuf,
     #[serde(default)]
     colors: Option<Vec<Color>>,
+    #[serde(rename = "preserveSubdirs")]
+    preserve_subdirs: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -95,6 +97,7 @@ impl Converter {
         input_dir: &Path,
         output_dir: &Path,
         colors: Option<&[Color]>,
+        preserve_subdirs: Option<bool>,
         task_name: &str,
     ) -> Result<()> {
         // like mkdir -p
@@ -125,9 +128,13 @@ impl Converter {
 
         for svg_path in &svg_files {
             let rel_path = svg_path.strip_prefix(input_dir).unwrap_or(svg_path);
-            let output_path = output_dir
-                .join(rel_path.file_name().unwrap())
-                .with_extension("png");
+            let output_subpath = if preserve_subdirs == Some(true) {
+                rel_path.as_os_str()
+            } else {
+                rel_path.file_name().unwrap()
+            };
+
+            let output_path = output_dir.join(output_subpath).with_extension("png");
 
             // Create parent dir if needed
             if let Some(parent) = output_path.parent() {
@@ -182,7 +189,13 @@ impl Converter {
         for (task_name, task) in &config.tasks {
             println!();
             info(&format!("Processing task: {}", &task_name));
-            self.process_directory(&task.dir, &task.out, task.colors.as_deref(), task_name)?;
+            self.process_directory(
+                &task.dir,
+                &task.out,
+                task.colors.as_deref(),
+                task.preserve_subdirs,
+                task_name,
+            )?;
         }
 
         Ok(())

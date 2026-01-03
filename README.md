@@ -50,10 +50,11 @@ Configuration files use the following format:
 
 ```json
 {
-  "Sample Task": {     <-- Task name
-    "dir": "svg",      <-- Specify input directory contianing SVG files
-    "out": "bitmaps",  <-- Specify output directory
-    "colors": [        <-- (Optional) Specify a list of color replacements
+  "Sample Task": {            <-- Task name
+    "dir": "svg",             <-- Specify input directory contianing SVG files
+    "out": "bitmaps",         <-- Specify output directory
+    "preserveSubdirs": true,  <-- (Optional) Specify if subdirs in dir should be preserved in out (defaults to false)
+    "colors": [               <-- (Optional) Specify a list of color replacements
       { "match": "#00FF00", "replace": "#FFFFFF" }
     ]
   }
