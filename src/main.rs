@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{Write, stdout};
 use std::path::{Path, PathBuf};
-use tiny_skia::Pixmap;
+use resvg::tiny_skia;
+use resvg::tiny_skia::Pixmap;
+use resvg::usvg;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
