@@ -7,12 +7,13 @@ This is a partial port of [cbmp](https://github.com/ful1e5/cbmp) by [ful1e5](htt
 ## Usage
 
 ```
-Usage: cbmp <CONFIG>
+Usage: cbmp [OPTIONS] <CONFIG>
 
 Arguments:
   <CONFIG>  Path to JSON configuration file
 
 Options:
+  -q, --quiet    Show less logs
   -h, --help     Print help
   -V, --version  Print version
 ```

@@ -11,11 +11,15 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[derive(Parser)]
 #[command(name = "cbmp-rs")]
 #[command(version = VERSION)]
-#[command(about = "CLI for converting cursor SVG files to PNG files.", long_about = None)]
+#[command(about = "A CLI for converting cursor SVG files to PNG files.", long_about = None)]
 struct Cli {
     /// Path to JSON configuration file
     #[arg(value_name = "CONFIG")]
     config: PathBuf,
+
+    /// Show less logs
+    #[arg(short, long, default_value_t = false)]
+    quiet: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -40,11 +44,13 @@ struct Color {
     replace: String,
 }
 
-struct Converter;
+struct Converter {
+    quiet: bool,
+}
 
 impl Converter {
-    fn new() -> Self {
-        Self {}
+    fn new(quiet: bool) -> Self {
+        Self { quiet }
     }
 
     fn svg_to_png(
@@ -111,7 +117,9 @@ impl Converter {
             return Ok(());
         }
 
-        info("SVG files found");
+        if !self.quiet {
+            info("SVG files found");
+        }
 
         for svg_path in &svg_files {
             let rel_path = svg_path.strip_prefix(input_dir).unwrap_or(svg_path);
@@ -124,12 +132,16 @@ impl Converter {
                 fs::create_dir_all(parent)?;
             }
 
-            print!("Processing item: {} ...", rel_path.display());
-            let _ = stdout().flush();
+            if !self.quiet {
+                print!("Processing item: {} ...", rel_path.display());
+                let _ = stdout().flush();
+            }
 
             match self.svg_to_png(svg_path, &output_path, colors) {
                 Ok(_) => {
-                    println!(" {}DONE{}", colors::SUCCESS, colors::RESET);
+                    if !self.quiet {
+                        println!(" {}DONE{}", colors::SUCCESS, colors::RESET);
+                    }
                 }
                 Err(e) => {
                     error(
@@ -152,10 +164,12 @@ impl Converter {
     }
 
     fn process_config(&self, config_path: &Path) -> Result<()> {
-        info(&format!(
-            "Loading configuration from {}",
-            config_path.display()
-        ));
+        if !self.quiet {
+            info(&format!(
+                "Loading configuration from {}",
+                config_path.display()
+            ));
+        }
 
         let config_data =
             fs::read_to_string(config_path).with_context(|| "Failed to read config file")?;
@@ -198,7 +212,7 @@ fn info(msg: &str) {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let converter = Converter::new();
+    let converter = Converter::new(cli.quiet);
 
     converter.process_config(&cli.config)
 }
