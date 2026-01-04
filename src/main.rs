@@ -186,8 +186,11 @@ impl Converter {
         let config: Config = serde_json::from_str(&config_data)
             .with_context(|| "Failed to parse JSON configuration")?;
 
-        for (task_name, task) in &config.tasks {
-            println!();
+        for (idx, (task_name, task)) in config.tasks.iter().enumerate() {
+            if idx != 0 {
+                println!();
+            }
+
             info(&format!("Processing task: {}", &task_name));
             self.process_directory(
                 &task.dir,
