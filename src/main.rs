@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{Write, stdout};
 use std::path::{Path, PathBuf};
+use std::process::ExitCode;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -210,7 +211,7 @@ impl Converter {
     }
 }
 
-fn main() {
+fn main() -> ExitCode {
     let cli = Cli::parse();
     let converter = Converter::new(cli.quiet);
 
@@ -218,5 +219,8 @@ fn main() {
 
     if let Err(err) = result {
         log_errorln!("{}", err);
+        return ExitCode::from(1);
     }
+
+    ExitCode::from(0)
 }
