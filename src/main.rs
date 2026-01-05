@@ -1,3 +1,6 @@
+mod colors;
+mod logging;
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use resvg::tiny_skia;
@@ -118,12 +121,12 @@ impl Converter {
             .collect();
 
         if svg_files.is_empty() {
-            warn(&format!("No SVG files found in: {}", input_dir.display()));
+            log_warnln!("No SVG files found in: {}", input_dir.display());
             return Ok(());
         }
 
         if !self.quiet {
-            info("SVG files found");
+            log_infoln!("SVG files found");
         }
 
         for svg_path in &svg_files {
@@ -142,29 +145,24 @@ impl Converter {
             }
 
             if !self.quiet {
-                print!("Processing item: {} ...", rel_path.display());
+                log_task!("Processing item: {}\r", rel_path.display());
                 let _ = stdout().flush();
             }
 
             match self.svg_to_png(svg_path, &output_path, colors) {
                 Ok(_) => {
                     if !self.quiet {
-                        println!(" {}DONE{}", colors::SUCCESS, colors::RESET);
+                        log_doneln!("");
                     }
                 }
                 Err(e) => {
-                    error(
-                        &format!("Failed to process {}: {}", rel_path.display(), e),
-                        false,
-                    );
+                    log_errorln!("Failed to process {}: {}", rel_path.display(), e);
                 }
             }
         }
 
-        println!(
-            "{}DONE{}: Finished processing {} file(s) ({})",
-            colors::SUCCESS,
-            colors::RESET,
+        log_doneln!(
+            "Finished processing {} file(s) ({})",
             svg_files.len(),
             task_name
         );
@@ -174,10 +172,10 @@ impl Converter {
 
     fn process_config(&self, config_path: &Path) -> Result<()> {
         if !self.quiet {
-            info(&format!(
+            log_infoln!(
                 "Loading configuration from {}",
                 config_path.display()
-            ));
+            );
         }
 
         let config_data =
@@ -191,7 +189,7 @@ impl Converter {
                 println!();
             }
 
-            info(&format!("Processing task: {}", &task_name));
+            log_taskln!("Processing task: {}", &task_name);
             self.process_directory(
                 &task.dir,
                 &task.out,
@@ -205,32 +203,13 @@ impl Converter {
     }
 }
 
-mod colors {
-    pub const RESET: &str = "\x1b[0m";
-    pub const WARN: &str = "\x1b[33m";
-    pub const ERROR: &str = "\x1b[31m";
-    pub const INFO: &str = "\x1b[34m";
-    pub const SUCCESS: &str = "\x1b[32m";
-}
-
-fn warn(msg: &str) {
-    println!("{}WARN:{} {}", colors::WARN, colors::RESET, msg);
-}
-
-fn error(msg: &str, fatal: bool) {
-    println!("{}ERROR:{} {}", colors::ERROR, colors::RESET, msg);
-    if fatal {
-        std::process::exit(1)
-    }
-}
-
-fn info(msg: &str) {
-    println!("{}INFO:{} {}", colors::INFO, colors::RESET, msg);
-}
-
-fn main() -> Result<()> {
+fn main() {
     let cli = Cli::parse();
     let converter = Converter::new(cli.quiet);
 
-    converter.process_config(&cli.config)
+    let result = converter.process_config(&cli.config);
+
+    if let Err(err) = result {
+        log_errorln!("{}", err);
+    }
 }
