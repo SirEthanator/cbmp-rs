@@ -185,11 +185,18 @@ impl Converter {
             .with_context(|| "Failed to parse JSON configuration")?;
 
         for (idx, (task_name, task)) in config.tasks.iter().enumerate() {
-            if idx != 0 {
+            if !self.quiet && idx != 0 {
                 println!();
             }
 
-            log_taskln!("Processing task: {}", &task_name);
+            log_task!("Processing task: {}", &task_name);
+            if self.quiet {
+                print!("\r");
+                let _ = stdout().flush();
+            } else {
+                println!();
+            }
+
             self.process_directory(
                 &task.dir,
                 &task.out,
